@@ -1,6 +1,7 @@
 package me.metallicgoat.specialItems;
 
 import de.marcely.bedwars.api.BedwarsAPI;
+import lombok.Getter;
 import me.metallicgoat.specialItems.config.Config;
 import me.metallicgoat.specialItems.customitems.CustomSpecialItem;
 import me.metallicgoat.specialItems.customitems.handlers.TowerHandler;
@@ -11,19 +12,13 @@ import org.bukkit.plugin.java.JavaPlugin;
 
 public class ExtraSpecialItemsPlugin extends JavaPlugin {
 
-  public static final int MIN_MBEDWARS_API_VER = 114;
-  public static final String MIN_MBEDWARS_VER_NAME = "5.4.15";
+  public static final int MIN_MBEDWARS_API_VER = 206;
+  public static final String MIN_MBEDWARS_VER_NAME = "5.5.6";
 
+  @Getter
   private static ExtraSpecialItemsAddon addon;
+  @Getter
   private static ExtraSpecialItemsPlugin instance;
-
-  public static ExtraSpecialItemsPlugin getInstance() {
-    return instance;
-  }
-
-  public static ExtraSpecialItemsAddon getAddon() {
-    return addon;
-  }
 
   public void onEnable() {
     instance = this;
