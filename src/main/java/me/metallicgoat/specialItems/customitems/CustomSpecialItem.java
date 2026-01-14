@@ -158,6 +158,8 @@ public class CustomSpecialItem {
     for (ExtraSpecialItemType type : ExtraSpecialItemType.values()) {
       if (type.hasMultipleItems())
         continue;
+      if (type.hasMinServerVersion() && NMSHelper.get().getVersion() < type.getMinServerVersion())
+        continue;
 
       if (type.getItem() == null)
         throw new IllegalStateException("Missing specialItem for " + type.name());
