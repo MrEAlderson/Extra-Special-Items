@@ -52,8 +52,12 @@ public enum ExtraSpecialItemType {
 
   /**
    * Get the SpecialItem associated with this type.
+   * <p>
+   *   Is <code>null</code> for {@link #hasMultipleItems()}
+   *   or (potentially, if server is older) {@link #hasMinServerVersion()}.
+   * </p>
    *
-   * @return the SpecialItem. Is <code>null</code> for {@link #hasMultipleItems()}
+   * @return the SpecialItem. May be <code>null</code>
    */
   @Nullable
   public SpecialItem getItem() {
@@ -66,10 +70,37 @@ public enum ExtraSpecialItemType {
    *   Only {@link #COMMAND} may have multiple items.
    * </p>
    *
-   * @return true if there may be multiple items of this type, false otherwise
+   * @return <code>true</code> if there may be multiple items of this type, <code>false</code> otherwise
    */
   public boolean hasMultipleItems() {
     return this == COMMAND;
+  }
+
+  /**
+   * Get whether this type requires a minimum server version.
+   *
+   * @return <code>true</code> if this type requires a minimum server version, <code>false</code> otherwise
+   */
+  public boolean hasMinServerVersion() {
+    return this == ENDLESS_BOOST;
+  }
+
+  /**
+   * Get the minimum server version required for this type.
+   *
+   * @return the minimum server version, or <code>null</code> if there is no minimum server version
+   */
+  @Nullable
+  public Integer getMinServerVersion() {
+    if (!hasMinServerVersion())
+      return null;
+
+    switch (this) {
+      case ENDLESS_BOOST:
+        return 12;
+      default:
+        throw new UnsupportedOperationException();
+    }
   }
 
   /**
