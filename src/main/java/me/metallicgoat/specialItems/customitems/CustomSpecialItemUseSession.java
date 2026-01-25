@@ -9,8 +9,12 @@ import org.bukkit.block.Block;
 
 public abstract class CustomSpecialItemUseSession extends SpecialItemUseSession {
 
+  private final Arena arena;
+
   public CustomSpecialItemUseSession(PlayerUseSpecialItemEvent event) {
     super(event);
+
+    this.arena = event.getArena();
   }
 
   public abstract void run(PlayerUseSpecialItemEvent event);
@@ -22,9 +26,7 @@ public abstract class CustomSpecialItemUseSession extends SpecialItemUseSession 
       return false;
 
     // Is block inside region
-    final Arena arena = getEvent().getArena();
-
-    if (arena == null || !arena.canPlaceBlockAt(block.getLocation()))
+    if (!this.arena.canPlaceBlockAt(block.getLocation()))
       return false;
 
     // Ask API
