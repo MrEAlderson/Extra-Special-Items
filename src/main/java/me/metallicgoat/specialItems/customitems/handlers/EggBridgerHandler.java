@@ -5,9 +5,6 @@ import de.marcely.bedwars.api.arena.ArenaStatus;
 import de.marcely.bedwars.api.arena.Team;
 import de.marcely.bedwars.api.event.player.PlayerUseSpecialItemEvent;
 import de.marcely.bedwars.tools.PersistentBlockData;
-import java.util.List;
-import java.util.UUID;
-import java.util.concurrent.CopyOnWriteArrayList;
 import me.metallicgoat.specialItems.ExtraSpecialItemsPlugin;
 import me.metallicgoat.specialItems.config.ConfigValue;
 import me.metallicgoat.specialItems.customitems.CustomSpecialItemUseSession;
@@ -16,7 +13,6 @@ import org.bukkit.DyeColor;
 import org.bukkit.Location;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Egg;
-import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.HandlerList;
@@ -24,14 +20,10 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.player.PlayerEggThrowEvent;
 import org.bukkit.scheduler.BukkitRunnable;
-import org.bukkit.scheduler.BukkitTask;
 
 public class EggBridgerHandler extends CustomSpecialItemUseSession implements Listener {
 
-  private static final List<UUID> nerfFallDamage = new CopyOnWriteArrayList<>();
-
-  private BukkitTask task;
-  private Egg egg;
+  private BridgeBlockPlacerTask task;
 
   public EggBridgerHandler(PlayerUseSpecialItemEvent event) {
     super(event);
@@ -47,44 +39,37 @@ public class EggBridgerHandler extends CustomSpecialItemUseSession implements Li
     final DyeColor color = team != null ? team.getDyeColor() : DyeColor.WHITE;
     final PersistentBlockData data = PersistentBlockData.fromMaterial(ConfigValue.egg_bridger_block_material).getDyedData(color);
 
-    this.egg = player.launchProjectile(Egg.class);
-    this.egg.getVelocity().multiply(1.2);
-    this.task = new BridgeBlockPlacerTask(this.egg, player, player.getLocation(), this, arena, data).runTaskTimer(ExtraSpecialItemsPlugin.getInstance(), 0L, 1L);
+    // spawn egg
+    final Egg egg = player.launchProjectile(Egg.class);
+    egg.getVelocity().multiply(1.2);
 
-    nerfFallDamage.add(player.getUniqueId());
-
-    Bukkit.getScheduler().runTaskLater(ExtraSpecialItemsPlugin.getInstance(), () -> {
-      nerfFallDamage.remove(player.getUniqueId());
-    }, 60L);
+    // start task
+    this.task = new BridgeBlockPlacerTask(egg, player, player.getLocation(), this, arena, data);
+    this.task.start();
 
     Bukkit.getPluginManager().registerEvents(this, ExtraSpecialItemsPlugin.getInstance());
   }
 
   @Override
   protected void handleStop() {
+    if (this.task == null)
+      return;
+
     HandlerList.unregisterAll(this);
-
-    if (this.egg != null && this.egg.isValid())
-      egg.remove();
-
-    if (this.task != null)
-      this.task.cancel();
+    this.task.clean();
+    this.task = null;
   }
 
   @EventHandler
   public void onCreatureSpawn(PlayerEggThrowEvent event) {
-    if (event.getEgg() == this.egg)
+    if (event.getEgg() == this.task.egg)
       event.setHatching(false);
   }
 
   @EventHandler
   public void onPlayerDamage(EntityDamageEvent event) {
-    if (event.getEntity().getType() != EntityType.PLAYER)
-      return;
-
-    if (nerfFallDamage.contains(event.getEntity().getUniqueId())) {
+    if (event.getEntity() == this.task.player)
       event.setDamage(Math.min(event.getDamage(), ConfigValue.egg_bridger_clutch_fall_damage_cap));
-    }
   }
 
   private static class BridgeBlockPlacerTask extends BukkitRunnable {
@@ -104,6 +89,15 @@ public class EggBridgerHandler extends CustomSpecialItemUseSession implements Li
       this.throwLocation = throwLocation;
     }
 
+    public void start() {
+      runTaskTimer(ExtraSpecialItemsPlugin.getInstance(), 0L, 1L);
+    }
+
+    public void clean() {
+      cancel();
+      this.egg.remove();
+    }
+
     @Override
     public void run() {
       final Location eggLocation = this.egg.getLocation();
@@ -119,9 +113,11 @@ public class EggBridgerHandler extends CustomSpecialItemUseSession implements Li
             return;
 
           // Down spawn blocks that may spawn in the player
-          if (player.getLocation().getY() < eggLocation.getY() + 2
-              && Math.abs(player.getLocation().getX() - eggLocation.getX()) < 2
-              && Math.abs(player.getLocation().getZ() - eggLocation.getZ()) < 2) {
+          final Location playerLoc = this.player.getLocation();
+
+          if (playerLoc.getY() < eggLocation.getY() + 2
+              && Math.abs(playerLoc.getX() - eggLocation.getX()) < 2
+              && Math.abs(playerLoc.getZ() - eggLocation.getZ()) < 2) {
             return;
           }
 
@@ -137,7 +133,7 @@ public class EggBridgerHandler extends CustomSpecialItemUseSession implements Li
 
       } else {
         this.session.stop();
-        cancel();
+        clean();
       }
     }
 
