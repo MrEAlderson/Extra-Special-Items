@@ -43,6 +43,11 @@ public class TowerHandler extends CustomSpecialItemUseSession {
   }
 
   @Override
+  public boolean isStoppedWithPlayerQuit() {
+    return false;
+  }
+
+  @Override
   public void run(PlayerUseSpecialItemEvent event) {
     final Player player = event.getPlayer();
     final Arena arena = event.getArena();
