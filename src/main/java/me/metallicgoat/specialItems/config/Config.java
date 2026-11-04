@@ -131,6 +131,7 @@ public class Config {
 
     ConfigValue.endless_boost_cooldown_duration = Duration.ofMillis(Math.max(0,
         (long) (config.getDouble("Endless-Boost.Cooldown-Seconds", 2.0) * 1000L)));
+    ConfigValue.endless_boost_fail_sound = parseConfigSound(config, "Endless-Boost.Fail-Sound", ConfigValue.endless_boost_fail_sound);
 
     // COMMAND ITEMS
     ConfigValue.command_item_enabled = config.getBoolean("Custom-Items.Enabled");
@@ -261,6 +262,7 @@ public class Config {
 
     config.set("Endless-Boost.Cooldown-Seconds",
         ConfigValue.endless_boost_cooldown_duration.toMillis() / 1000D);
+    config.set("Endless-Boost.Fail-Sound", ConfigValue.endless_boost_fail_sound.serializeAsConfig());
 
     config.addEmptyLine();
 

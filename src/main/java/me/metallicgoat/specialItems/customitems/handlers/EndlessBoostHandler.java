@@ -29,6 +29,11 @@ public class EndlessBoostHandler extends CustomSpecialItemUseSession {
       if (!player.isGliding())
         return;
 
+      if (!event.getArena().isInside(player.getLocation())) {
+        ConfigValue.endless_boost_fail_sound.play(player);
+        return;
+      }
+
       // check cooldown
       if (!ConfigValue.endless_boost_cooldown_duration.isZero()) {
         final boolean hasCooldown = !this.cooldownPlayers.add(player.getUniqueId());

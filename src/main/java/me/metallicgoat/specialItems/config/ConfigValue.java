@@ -71,6 +71,7 @@ public class ConfigValue {
   public static String endless_boost_icon_name = "EndlessBoost";
   public static ItemStack endless_boost_icon_material = Helper.get().parseItemStack("FIREWORK_ROCKET");
   public static Duration endless_boost_cooldown_duration = Duration.ofSeconds(2);
+  public static VarSound endless_boost_fail_sound = VarSound.from(Helper.get().getSoundByName("BLOCK_NOTE_BASS"));
 
   // Command Item
   public static boolean command_item_enabled = false;
